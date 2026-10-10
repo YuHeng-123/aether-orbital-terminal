@@ -1,0 +1,144 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    background-color: #E5E5E7;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: #111113;
+    background-color: #E5E5E7;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background-color: #111113;
+    color: #FFFFFF;
+  }
+
+  /* Custom subtle scrollbars */
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
+  }
+}
+
+@layer components {
+  /* CRT scanline effect */
+  .scanline {
+    background: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0),
+      rgba(255, 255, 255, 0) 50%,
+      rgba(0, 0, 0, 0.25) 50%,
+      rgba(0, 0, 0, 0.25)
+    );
+    background-size: 100% 4px;
+  }
+
+  /* Laser scanner bar */
+  .scanner-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #2DD4BF, transparent);
+    box-shadow: 0 0 12px #2DD4BF;
+    animation: scanMove 4s ease-in-out infinite;
+  }
+
+  /* Thermal infrared shader overlay */
+  .thermal-mode {
+    filter: contrast(140%) brightness(110%) hue-rotate(180deg) saturate(200%);
+    mix-blend-mode: hard-light;
+  }
+
+  /* SAR radar green holographic mode */
+  .sar-mode {
+    filter: contrast(180%) brightness(90%) sepia(100%) hue-rotate(90deg) saturate(300%);
+  }
+
+  /* Subtle crosshair grid pattern */
+  .hud-grid {
+    background-size: 40px 40px;
+    background-image: 
+      linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  }
+
+  .hud-grid-light {
+    background-size: 48px 48px;
+    background-image: 
+      linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+  }
+
+  /* Red Alert Emergency Hazard Striping */
+  .hazard-stripes {
+    background: repeating-linear-gradient(
+      -45deg,
+      rgba(239, 68, 68, 0.25),
+      rgba(239, 68, 68, 0.25) 10px,
+      rgba(0, 0, 0, 0.5) 10px,
+      rgba(0, 0, 0, 0.5) 20px
+    );
+  }
+
+  @keyframes alertPulse {
+    0%, 100% {
+      box-shadow: 0 0 30px rgba(239, 68, 68, 0.3), inset 0 0 30px rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.6);
+    }
+    50% {
+      box-shadow: 0 0 70px rgba(239, 68, 68, 0.7), inset 0 0 50px rgba(239, 68, 68, 0.35);
+      border-color: rgba(239, 68, 68, 0.95);
+    }
+  }
+
+  .red-alert-card {
+    animation: alertPulse 1.6s infinite ease-in-out;
+  }
+}
+
+
+@keyframes scanMove {
+  0% { transform: translateY(0%); opacity: 0; }
+  10% { opacity: 0.8; }
+  90% { opacity: 0.8; }
+  100% { transform: translateY(500px); opacity: 0; }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+@keyframes radarRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
