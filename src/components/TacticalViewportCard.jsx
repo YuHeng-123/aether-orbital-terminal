@@ -42,6 +42,7 @@ import Earth3DGlobe from './Earth3DGlobe'
 import ModuleInspectionDrawer from './ModuleInspectionDrawer'
 import MercatorGroundTrackRadar from './MercatorGroundTrackRadar'
 import SolarSystemOrrery from './SolarSystemOrrery'
+import { subscribeISSTelemetry } from '../utils/issTelemetry'
 
 export default function TacticalViewportCard() {
   const [renderMode, setRenderMode] = useState('webgl') // 'webgl' (Real 3D ISS) | 'earth' | 'cinematic'
@@ -69,6 +70,29 @@ export default function TacticalViewportCard() {
     signal: 99.8,
     radiation: 14.2, // micro-Sv/h
   })
+
+  // Realtime NASA / NORAD 25544 ISS Telemetry State
+  const [liveISS, setLiveISS] = useState({
+    latitude: 28.57,
+    longitude: -80.65,
+    altitude: 419.8,
+    velocity: 27580.0,
+    visibility: 'daylight',
+    isLive: true,
+  })
+
+  useEffect(() => {
+    const unsub = subscribeISSTelemetry((data) => {
+      setLiveISS(data)
+      setTelemetry((prev) => ({
+        ...prev,
+        lat: data.latitude,
+        lon: data.longitude,
+        range: data.altitude,
+      }))
+    })
+    return unsub
+  }, [])
 
   const cardRef = useRef(null)
 
@@ -262,6 +286,17 @@ export default function TacticalViewportCard() {
                   {redAlert ? 'ALERT // LEVEL-1' : 'LIVE // 4K 60FPS'}
                 </span>
 
+                {/* Realtime ISS Telemetry Badge */}
+                <div className="flex items-center gap-2 px-2.5 py-1 rounded-full border border-emerald-500/30 bg-black/60 backdrop-blur-md text-[9px] font-mono text-emerald-300">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                  <span>NORAD 25544 // ISS LIVE STREAM</span>
+                  <span className="text-white/30 hidden sm:inline">|</span>
+                  <span className="hidden sm:inline">LAT: {liveISS.latitude}°</span>
+                  <span className="hidden sm:inline">LON: {liveISS.longitude}°</span>
+                  <span className="text-amber-300 font-bold hidden md:inline">ALT: {liveISS.altitude}KM</span>
+                  <span className="text-sky-300 font-bold hidden md:inline">VEL: {liveISS.velocity}KM/H</span>
+                </div>
+
                 <div className="flex items-center bg-black/75 p-0.5 rounded-lg border border-white/20 backdrop-blur-md">
                   <button
                     onClick={() => {
@@ -314,15 +349,29 @@ export default function TacticalViewportCard() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={toggleCabinHum}
-                  className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[9px] font-mono border backdrop-blur-md transition-all ${
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-mono border backdrop-blur-md transition-all ${
                     cabinHumOn
-                      ? 'bg-sky-500/20 text-sky-300 border-sky-400/40'
+                      ? 'bg-sky-500/25 text-sky-200 border-sky-400/60 shadow-lg shadow-sky-500/20'
                       : 'bg-black/50 text-zinc-400 border-white/10 hover:text-white'
                   }`}
-                  title="Toggle Sub-bass Cabin Air Circulation Hum"
+                  title="切换空间站 48Hz 低频引擎舱压环境音与战术音效"
                 >
-                  {cabinHumOn ? <Volume2 size={11} /> : <VolumeX size={11} />}
-                  <span className="hidden sm:inline">CABIN HUM</span>
+                  {cabinHumOn ? (
+                    <>
+                      <Volume2 size={12} className="text-sky-400" />
+                      <span className="flex items-end gap-0.5 h-2.5 px-0.5">
+                        <span className="w-0.5 h-1.5 bg-sky-400 animate-pulse" />
+                        <span className="w-0.5 h-2.5 bg-sky-400 animate-pulse delay-75" />
+                        <span className="w-0.5 h-1 bg-sky-400 animate-pulse delay-150" />
+                      </span>
+                      <span>48Hz CABIN HUM: ON</span>
+                    </>
+                  ) : (
+                    <>
+                      <VolumeX size={12} />
+                      <span>48Hz CABIN HUM: OFF</span>
+                    </>
+                  )}
                 </button>
 
                 {/* Multispectral Sensor Toggles */}

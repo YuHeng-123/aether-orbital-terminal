@@ -68,6 +68,19 @@ const CAMERA_PRESETS = {
     rotY: 0.75,
     tag: 'DEEP SPACE',
   },
+  cupola_vr: {
+    id: 'cupola_vr',
+    label: '穹顶舷窗漫游',
+    sublabel: '宇航员第一人称 · 7扇舷窗俯瞰地球',
+    icon: Eye,
+    lookAt: new THREE.Vector3(0, -0.22, 0.72),
+    zoom: 1.15,
+    minZoom: 0.6,
+    maxZoom: 2.5,
+    rotX: 1.25,
+    rotY: 0.05,
+    tag: 'VR POV',
+  },
 }
 
 // 3D Anchors on the Space Station Model for Realtime Screen-Projected Holographic Hotspots
@@ -823,6 +836,7 @@ export default function Orbital3DCanvas({
             {activePreset === 'earth' && '当前: 地球宏观全景 · 360°观察母星转动 · 右键平移视角 · 滚轮缩放'}
             {activePreset === 'nadir' && '当前: 穹顶对地俯瞰 · 直击地表气象云系与晨昏带'}
             {activePreset === 'deep' && '当前: 深空全景广角 · 空间站与地球共生轨道视角'}
+            {activePreset === 'cupola_vr' && '当前: 穹顶舷窗漫游 (ASTRONAUT POV) · 宇航员第一人称俯瞰地球'}
           </span>
           <span className="text-white/30">|</span>
           <span className={redAlert ? 'text-red-400 font-bold' : 'text-emerald-400 font-bold'}>

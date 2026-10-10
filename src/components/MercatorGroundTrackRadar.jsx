@@ -13,6 +13,7 @@ import {
   Zap,
 } from 'lucide-react'
 import { playClick, playTelemetryChirp } from '../utils/audio'
+import { subscribeISSTelemetry } from '../utils/issTelemetry'
 
 // Global Deep-Space Tracking Ground Stations
 const GROUND_STATIONS = [
@@ -41,6 +42,21 @@ export default function MercatorGroundTrackRadar({
     aosCountdown: 258, // seconds
     sunLit: true,
   })
+
+  // Subscribe to real ISS position
+  useEffect(() => {
+    const unsub = subscribeISSTelemetry((data) => {
+      setOrbitData((prev) => ({
+        ...prev,
+        lat: data.latitude,
+        lon: data.longitude,
+        alt: data.altitude,
+        velocity: Number((data.velocity / 3600).toFixed(2)), // km/s
+        sunLit: data.visibility !== 'eclipsed',
+      }))
+    })
+    return unsub
+  }, [])
 
   const propsRef = useRef({ timeWarp, redAlert })
   useEffect(() => {
