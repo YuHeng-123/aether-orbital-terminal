@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
+import { getAssetUrl } from '../utils/assets'
 
 export default function Earth3DGlobe({ mode = 'optical', mouseNorm = { x: 50, y: 50 } }) {
   const containerRef = useRef(null)
@@ -81,23 +82,46 @@ export default function Earth3DGlobe({ mode = 'optical', mouseNorm = { x: 50, y:
 
     // 4. Photorealistic NASA 3D Earth
     const textureLoader = new THREE.TextureLoader()
-    const dayTexture = textureLoader.load('/earth_day.jpg')
-    const nightTexture = textureLoader.load('/earth_night.jpg')
-    const cloudsTexture = textureLoader.load('/earth_clouds.jpg')
-
+    const dayTexture = textureLoader.load(
+      getAssetUrl('earth_day.jpg'),
+      (tex) => {
+        tex.colorSpace = THREE.SRGBColorSpace
+        earthMat.map = tex
+        earthMat.needsUpdate = true
+      }
+    )
     dayTexture.colorSpace = THREE.SRGBColorSpace
+
+    const nightTexture = textureLoader.load(
+      getAssetUrl('earth_night.jpg'),
+      (tex) => {
+        tex.colorSpace = THREE.SRGBColorSpace
+        earthMat.emissiveMap = tex
+        earthMat.needsUpdate = true
+      }
+    )
     nightTexture.colorSpace = THREE.SRGBColorSpace
+
+    const cloudsTexture = textureLoader.load(
+      getAssetUrl('earth_clouds.jpg'),
+      (tex) => {
+        tex.colorSpace = THREE.SRGBColorSpace
+        cloudMat.map = tex
+        cloudMat.needsUpdate = true
+      }
+    )
 
     // Earth Base Sphere (Continents + Oceans + Night City Lights)
     const earthRadius = 2.4
     const earthGeo = new THREE.SphereGeometry(earthRadius, 64, 64)
     const earthMat = new THREE.MeshStandardMaterial({
       map: dayTexture,
+      color: 0xffffff,
       roughness: 0.5,
-      metalness: 0.1,
+      metalness: 0.08,
       emissiveMap: nightTexture,
       emissive: new THREE.Color(0xf59e0b),
-      emissiveIntensity: 0.65,
+      emissiveIntensity: 0.85,
     })
     const earthMesh = new THREE.Mesh(earthGeo, earthMat)
     scene.add(earthMesh)

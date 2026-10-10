@@ -13,6 +13,7 @@ import {
   Info,
 } from 'lucide-react'
 import { playClick, playDollyZoom, playModeChirp } from '../utils/audio'
+import { getAssetUrl } from '../utils/assets'
 
 // Planetary Data Configuration (True Proportional Distance & Period Hierarchy)
 const PLANETS = [
@@ -303,7 +304,7 @@ export default function SolarSystemOrrery({
     // 5. Build Planets & Keplerian Orbit Tracks
     const planetMeshes = {}
     const textureLoader = new THREE.TextureLoader()
-    const earthDayTex = textureLoader.load('/earth_day.jpg')
+    const earthDayTex = textureLoader.load(getAssetUrl('earth_day.jpg'))
     earthDayTex.colorSpace = THREE.SRGBColorSpace
 
     PLANETS.forEach((pl) => {

@@ -13,6 +13,7 @@ import {
   playDollyZoom,
   playInspectionPing,
 } from '../utils/audio'
+import { getAssetUrl } from '../utils/assets'
 
 // Camera Perspective Presets with distinct focal points & zoom envelopes
 const CAMERA_PRESETS = {
@@ -38,8 +39,8 @@ const CAMERA_PRESETS = {
     zoom: 10.5,
     minZoom: 4.8,
     maxZoom: 26.0,
-    rotX: 0.22,
-    rotY: -0.85,
+    rotX: 0.18,
+    rotY: 0.25,
     tag: 'EARTH ORBIT',
   },
   nadir: {
@@ -248,15 +249,17 @@ export default function Orbital3DCanvas({
     container.appendChild(renderer.domElement)
 
     // 2. Cosmic Space Lighting
-    const ambientLight = new THREE.AmbientLight(0x1e293b, 0.85)
+    const ambientLight = new THREE.AmbientLight(0x475569, 1.4) // Balanced cosmic ambient so dark side retains subtle clarity
     scene.add(ambientLight)
 
-    const sunLight = new THREE.DirectionalLight(0xfffaed, 3.8)
-    sunLight.position.set(20, 14, 16)
+    // Primary Sun Light positioned to give dramatic, balanced day/night illumination across the front globe
+    const sunLight = new THREE.DirectionalLight(0xfffaed, 4.2)
+    sunLight.position.set(12, 8, 16)
     scene.add(sunLight)
 
+    // Celestial deep-blue fill light for atmospheric backscatter
     const earthAlbedo = new THREE.DirectionalLight(0x38bdf8, 2.2)
-    earthAlbedo.position.set(-10, -8, -6)
+    earthAlbedo.position.set(-10, -6, 10)
     scene.add(earthAlbedo)
 
     // 3. Deep Space Starfield Sphere
@@ -289,48 +292,95 @@ export default function Orbital3DCanvas({
     scene.add(stars)
 
     // 4. Photorealistic NASA 3D Earth System
-    const textureLoader = new THREE.TextureLoader()
-    const dayTexture = textureLoader.load('/earth_day.jpg')
-    const nightTexture = textureLoader.load('/earth_night.jpg')
-    const cloudsTexture = textureLoader.load('/earth_clouds.jpg')
+    // Instant Procedural Earth Canvas Texture (fallback in 0ms so Earth is NEVER black)
+    const procCanvas = document.createElement('canvas')
+    procCanvas.width = 1024
+    procCanvas.height = 512
+    const pctx = procCanvas.getContext('2d')
+    const grad = pctx.createLinearGradient(0, 0, 0, 512)
+    grad.addColorStop(0, '#0a2342')
+    grad.addColorStop(0.5, '#0f3c68')
+    grad.addColorStop(1, '#0a2342')
+    pctx.fillStyle = grad
+    pctx.fillRect(0, 0, 1024, 512)
+    pctx.fillStyle = '#1e3d30'
+    pctx.beginPath()
+    pctx.ellipse(540, 240, 130, 85, 0, 0, Math.PI * 2)
+    pctx.ellipse(640, 180, 150, 75, -0.2, 0, Math.PI * 2)
+    pctx.ellipse(260, 200, 65, 85, 0.2, 0, Math.PI * 2)
+    pctx.ellipse(310, 330, 55, 95, 0.35, 0, Math.PI * 2)
+    pctx.fill()
+    const procTex = new THREE.CanvasTexture(procCanvas)
+    procTex.colorSpace = THREE.SRGBColorSpace
 
+    const textureLoader = new THREE.TextureLoader()
+    const dayTexture = textureLoader.load(
+      getAssetUrl('earth_day.jpg'),
+      (tex) => {
+        tex.colorSpace = THREE.SRGBColorSpace
+        earthMat.map = tex
+        earthMat.needsUpdate = true
+      }
+    )
     dayTexture.colorSpace = THREE.SRGBColorSpace
+
+    const nightTexture = textureLoader.load(
+      getAssetUrl('earth_night.jpg'),
+      (tex) => {
+        tex.colorSpace = THREE.SRGBColorSpace
+        earthMat.emissiveMap = tex
+        earthMat.needsUpdate = true
+      }
+    )
     nightTexture.colorSpace = THREE.SRGBColorSpace
 
+    const cloudsTexture = textureLoader.load(
+      getAssetUrl('earth_clouds.jpg'),
+      (tex) => {
+        tex.colorSpace = THREE.SRGBColorSpace
+        cloudMat.map = tex
+        cloudMat.needsUpdate = true
+      }
+    )
+
     const earthRadius = 3.2
-    const earthGeo = new THREE.SphereGeometry(earthRadius, 48, 48)
+    const earthGeo = new THREE.SphereGeometry(earthRadius, 64, 64)
     const earthMat = new THREE.MeshStandardMaterial({
-      map: dayTexture,
-      roughness: 0.52,
-      metalness: 0.1,
+      map: dayTexture || procTex,
+      color: 0xffffff,
+      roughness: 0.48,
+      metalness: 0.08,
       emissiveMap: nightTexture,
       emissive: new THREE.Color(0xf59e0b),
-      emissiveIntensity: 0.75,
+      emissiveIntensity: 0.95,
     })
     const earthMesh = new THREE.Mesh(earthGeo, earthMat)
     earthMesh.position.set(0, 0, 0)
     earthMesh.rotation.x = 0.38
+    earthMesh.rotation.y = 1.4
     scene.add(earthMesh)
 
     // Swirling Clouds Layer
-    const cloudGeo = new THREE.SphereGeometry(earthRadius * 1.012, 48, 48)
+    const cloudGeo = new THREE.SphereGeometry(earthRadius * 1.012, 64, 64)
     const cloudMat = new THREE.MeshStandardMaterial({
       map: cloudsTexture,
       transparent: true,
-      opacity: 0.82,
+      opacity: 0.85,
       blending: THREE.AdditiveBlending,
       roughness: 1.0,
     })
     const cloudMesh = new THREE.Mesh(cloudGeo, cloudMat)
     cloudMesh.position.set(0, 0, 0)
+    cloudMesh.rotation.x = 0.38
+    cloudMesh.rotation.y = 1.4
     scene.add(cloudMesh)
 
     // Atmospheric Rayleigh Scattering Outer Shell
-    const atmosGeo = new THREE.SphereGeometry(earthRadius * 1.055, 48, 48)
+    const atmosGeo = new THREE.SphereGeometry(earthRadius * 1.055, 64, 64)
     const atmosMat = new THREE.MeshBasicMaterial({
       color: 0x38bdf8,
       transparent: true,
-      opacity: 0.38,
+      opacity: 0.42,
       side: THREE.BackSide,
       blending: THREE.AdditiveBlending,
     })
@@ -390,7 +440,7 @@ export default function Orbital3DCanvas({
 
     const gltfLoader = new GLTFLoader()
     gltfLoader.load(
-      '/iss.glb',
+      getAssetUrl('iss.glb'),
       (gltf) => {
         loadedModel = gltf.scene
 

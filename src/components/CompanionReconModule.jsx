@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Mountain, Sliders, Activity, Radar, Compass } from 'lucide-react'
 import { playTick, playClick } from '../utils/audio'
+import { getAssetUrl } from '../utils/assets'
 
 export default function CompanionReconModule() {
   const [resolution, setResolution] = useState(1.2)
@@ -16,7 +17,7 @@ export default function CompanionReconModule() {
     <div className="group relative rounded-3xl bg-[#101012] overflow-hidden border border-white/10 p-6 flex flex-col justify-between shadow-[0_20px_50px_-10px_rgba(0,0,0,0.4)] select-none">
       {/* Background Satellite Topo Scan */}
       <img
-        src="/planetary_recon.jpg"
+        src={getAssetUrl('planetary_recon.jpg')}
         alt="Planetary Topography Recon"
         className="absolute inset-0 w-full h-full object-cover object-center opacity-40 transition-transform duration-700 ease-out group-hover:scale-105"
       />
